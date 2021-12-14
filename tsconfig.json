@@ -1,0 +1,22 @@
+{
+    "include": ["src"],
+    "compilerOptions": {
+        "module": "Node16",
+        "moduleResolution": "Node16",
+        "moduleDetection": "force",
+        "target": "ES2021",
+        "outDir": "dist",
+        "declaration": true,
+        "allowSyntheticDefaultImports": true,
+        "strict": true,
+        "resolveJsonModule": false,
+        "keyofStringsOnly": true,
+        "skipLibCheck": true,
+        "noEmitOnError": true
+    },
+    "ts-node": {
+        "transpileOnly": true,
+        "files": true,
+        "experimentalResolver": true
+    }
+}
