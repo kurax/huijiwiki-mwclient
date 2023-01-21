@@ -65,7 +65,10 @@ export class HttpClient {
 
     private createSearchParams(params: MediaWikiRequestParams) {
         const search = new URLSearchParams();
-        for (const key in params) if (params[key] != null) search.set(key, this.toValues(params[key]));
+        for (const key in params) {
+            const value = params[key];
+            if (value != null && !(typeof value === 'boolean' && value === false)) search.set(key, this.toValues(value));
+        }
         search.set('format', 'json');
         search.set('formatversion', '2');
         search.set('errorformat', 'plaintext');
