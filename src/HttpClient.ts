@@ -28,7 +28,7 @@ export interface MediaWikiResponseBody {
 }
 
 interface QueryResponseBody<T> extends MediaWikiResponseBody {
-    batchcomplete: boolean;
+    batchcomplete: boolean | string;
     query: T;
 }
 

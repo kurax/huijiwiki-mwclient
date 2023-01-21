@@ -53,4 +53,10 @@ export class Client {
         if (result.reason != null) throw new Error(result.reason.text ?? '');
         throw new Error(result.result);
     }
+
+    async logout() {
+        const token = (await this.requestToken('csrf')).csrftoken;
+        assert(token != null, 'Failed to get csrf token');
+        await this.httpClient.post({ action: 'logout', token });
+    }
 }
