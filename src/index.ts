@@ -1,1 +1,3 @@
-export * from './MWClient.js';
+export type { ClientOptions } from './Client.js';
+
+export { Client } from './Client.js';
