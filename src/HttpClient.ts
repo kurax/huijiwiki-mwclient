@@ -1,3 +1,4 @@
+import chalk from 'chalk';
 import got, { Got } from 'got';
 import fs from 'node:fs';
 import { CookieJar } from 'tough-cookie';
@@ -75,6 +76,11 @@ export class HttpClient {
         return search;
     }
 
+    private checkWarnings(warnings?: MediaWikiError[]) {
+        if (warnings == null) return;
+        for (const warning of warnings) console.warn(chalk.yellow(`[${warning.module}] ${warning.code}: ${warning.text}`));
+    }
+
     private checkErrors(errors?: MediaWikiError[]) {
         if (errors == null) return;
         const message = (Array.isArray(errors) ? errors : [errors]).map(err => `[${err.module}] ${err.code}: ${err.text}`).join('\n');
@@ -83,12 +89,14 @@ export class HttpClient {
 
     async get<T extends MediaWikiRequestParams = MediaWikiRequestParams, R extends MediaWikiResponseBody = MediaWikiResponseBody>(params: T): Promise<R> {
         const result = await this.client.get(this.endpoint, { searchParams: this.createSearchParams(params) }).json<R>();
+        this.checkWarnings(result.warnings);
         this.checkErrors(result.errors);
         return result;
     }
 
     async post<T extends MediaWikiRequestParams = MediaWikiRequestParams, R extends MediaWikiResponseBody = MediaWikiResponseBody>(params: T): Promise<R> {
         const result = await this.client.post(this.endpoint, { form: Object.fromEntries(this.createSearchParams(params).entries()) }).json<R>();
+        this.checkWarnings(result.warnings);
         this.checkErrors(result.errors);
         return result;
     }
