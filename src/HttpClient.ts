@@ -6,7 +6,8 @@ import { CookieJar } from 'tough-cookie';
 import { Action } from './types/action.js';
 import { getRelativePath } from './utils.js';
 
-type Primitive = string | number | boolean | null | undefined;
+type Primitive = string | number | boolean | Date | null | undefined;
+// type RemoveIndex<T> = { [P in keyof T as string extends P ? never : number extends P ? never : P]: T[P] };
 
 export interface MediaWikiError {
     code: string;
@@ -14,12 +15,11 @@ export interface MediaWikiError {
     module: string;
 }
 
-export interface MediaWikiRequestParams {
+export interface MediaWikiRequestParams extends Record<string, Primitive | Primitive[]> {
     action: Action;
     format?: never;
     formatversion?: never;
     errorformat?: never;
-    [key: string]: Primitive | Primitive[];
 }
 
 export interface MediaWikiResponseBody {
@@ -64,11 +64,18 @@ export class HttpClient {
         return value;
     }
 
-    private createSearchParams(params: MediaWikiRequestParams) {
+    private createSearchParams(params: Record<string, Primitive | Primitive[]>) {
         const search = new URLSearchParams();
+        const convert = (value: Primitive) => {
+            if (typeof value === 'boolean') return '';
+            if (value instanceof Date) return value.toISOString();
+            return String(value);
+        };
         for (const key in params) {
-            const value = params[key];
-            if (value != null && !(typeof value === 'boolean' && value === false)) search.set(key, this.toValues(value));
+            let value = params[key];
+            if (value == null || (typeof value === 'boolean' && value === false)) continue;
+            value = Array.isArray(value) ? value.map(convert) : convert(value);
+            search.set(key, this.toValues(value));
         }
         search.set('format', 'json');
         search.set('formatversion', '2');
