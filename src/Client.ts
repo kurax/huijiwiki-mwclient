@@ -1,5 +1,6 @@
 import assert from 'node:assert';
 
+import { EditParams, EditResult } from './types/edit.js';
 import { LoginParams, LoginResult } from './types/login.js';
 import { QueryMeta, QueryMetaParams, QueryMetaResult } from './types/query/meta.js';
 import { TokenType } from './types/query/meta/tokens.js';
@@ -17,8 +18,19 @@ export interface ClientOptions {
     // };
 }
 
+export interface EditPageOptions {
+    summary?: string;
+    minor?: boolean;
+    notMinor?: boolean;
+    bot?: boolean;
+    recreate?: boolean;
+    createOnly?: boolean;
+    noCreate?: boolean;
+}
+
 export class Client {
     private readonly httpClient: HttpClient;
+    private editToken: string | undefined;
 
     constructor(readonly options: ClientOptions) {
         const protocol = options.protocol === 'http' ? 'http' : 'https';
@@ -58,5 +70,28 @@ export class Client {
         const token = (await this.requestToken('csrf')).csrftoken;
         assert(token != null, 'Failed to get csrf token');
         await this.httpClient.post({ action: 'logout', token });
+        this.editToken = undefined;
+    }
+
+    async editPage(page: string | number, text: string, options?: EditPageOptions): Promise<EditResult['edit']> {
+        this.editToken = this.editToken ?? (await this.requestToken('csrf')).csrftoken;
+        assert(this.editToken != null, 'Failed to get csrf token');
+
+        const title = typeof page === 'string' ? { title: page } : { pageid: page };
+        return (
+            await this.httpClient.post<EditParams, EditResult>({
+                action: 'edit',
+                ...title,
+                text,
+                summary: options?.summary,
+                minor: options?.minor,
+                notminor: options?.notMinor,
+                bot: options?.bot,
+                recreate: options?.recreate,
+                createonly: options?.createOnly,
+                nocreate: options?.noCreate,
+                token: this.editToken
+            })
+        ).edit;
     }
 }
