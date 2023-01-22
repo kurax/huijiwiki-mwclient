@@ -1,6 +1,6 @@
 {
     "name": "@huijiwiki/mwclient",
-    "description": "A simple node http client for MediaWiki",
+    "description": "An opinionated Node.js wrapper for MediaWiki APIs.",
     "version": "0.0.2",
     "packageManager": "yarn@3.3.1",
     "license": "MIT",

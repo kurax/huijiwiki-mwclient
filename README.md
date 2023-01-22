@@ -10,6 +10,18 @@ Currently under alpha development.
 
 -   Node.js 16.3+
 
+## Installation
+
+```
+npm install @huijiwiki/mwclient
+```
+
+or if you use yarn
+
+```
+yarn add @huijiwiki/mwclient
+```
+
 ## Features
 
 -   Everyday actions for your bots, with optional advanced options.

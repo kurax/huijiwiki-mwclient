@@ -6,7 +6,7 @@ import { QueryMeta, QueryMetaParams, QueryMetaResult } from './types/query/meta.
 import { TokenType } from './types/query/meta/tokens.js';
 import { HttpClient } from './HttpClient.js';
 
-type Multi<T, A = T> = T | A[];
+type Multi<T1, T2 = T1> = T1 | T2[];
 
 export interface ClientOptions {
     host: string;
