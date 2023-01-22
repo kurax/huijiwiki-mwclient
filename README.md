@@ -14,7 +14,7 @@ Currently under alpha development.
 
 -   Everyday actions for your bots, with optional advanced options.
 -   Promise-based API.
--   TypeScript supported.
+-   TypeScript is supported.
 
 ## Usage
 
@@ -26,7 +26,7 @@ import { Client } from '@huijiwiki/mwclient';
 const client = new Client({
     host: 'en.wikipedia.org', // Required. Site host name, do not include protocol
     protocol: 'https', // Optional. Defaults to 'https'
-    apiPath: '/w/api.php' // Optional, Defaults to '/w/api.php'
+    apiPath: '/w/api.php' // Optional. Defaults to '/w/api.php'
 });
 ```
 
@@ -50,10 +50,10 @@ More APIs are on the way...
 
 ## Error handling
 
-MediaWiki API returns errors as `200 OK` but this lib will parse it and throw an `Error`, so remember use `try/catch` when calling an API.
+The MediaWiki API returns errors as `200 OK` but this lib will parse it and throw an `Error`, so remember to use `try/catch` when calling an API.
 
 ## Contribution
 
-This lib developed and being internal used by [HuijiWiki](https://www.huijiwiki.com), a wiki farm in Chinese.
+This lib developed and is being internally used by [HuijiWiki](https://www.huijiwiki.com), a wiki farm in Chinese.
 
-The code is too simple to accept helps, mostly we will expand it based on ourselves demands. But you're welcomed to make any suggestion.
+The code is too simple to accept help, mostly we will expand it based on our own demands. But you're welcome to make any suggestion.
