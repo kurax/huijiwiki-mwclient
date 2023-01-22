@@ -30,6 +30,12 @@ yarn add @huijiwiki/mwclient
 
 ## Usage
 
+-   The names of functions (actions) are kind of self-descriptive.
+-   Critical or commonly used parameters will be function arguments; \
+    With an optional object as the last argument, which contains other parameters that make sense for the action.
+-   Consult the MediaWiki API documentation for explainations of the parameters.
+-   This library is aiming to work with the latest MediaWiki LTS version, older versions may have compatibility issues.
+
 ### Creating a client instance
 
 ```ts
@@ -42,17 +48,13 @@ const client = new Client({
 });
 ```
 
-### Login
-
-_[MediaWiki API Doc](https://www.mediawiki.org/w/api.php?action=help&modules=login)_
+### Login <font size="2">[[Details]](https://www.mediawiki.org/wiki/API:Login)</font>
 
 ```ts
 await client.login('User', 'Password');
 ```
 
-### Creating/Editing a page
-
-_[MediaWiki API Doc](https://www.mediawiki.org/w/api.php?action=help&modules=edit)_
+### Creating/Editing a page <font size="2">[[Details]](https://www.mediawiki.org/wiki/API:Edit)</font>
 
 ```ts
 await client.editPage('Page', 'Content', { summary: 'Some changes' });

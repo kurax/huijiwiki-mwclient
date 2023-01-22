@@ -4,9 +4,13 @@ import fs from 'node:fs';
 import { CookieJar } from 'tough-cookie';
 
 import { Action } from './types/action.js';
+import { QueryGenerator } from './types/query/generator.js';
+import { QueryList } from './types/query/list.js';
+import { QueryMeta } from './types/query/meta.js';
+import { QueryProp } from './types/query/prop.js';
 import { getRelativePath } from './utils.js';
 
-type Primitive = string | number | boolean | Date | null | undefined;
+type ParamValue = string | number | boolean | Date | MediaWikiContinue | null | undefined;
 // type RemoveIndex<T> = { [P in keyof T as string extends P ? never : number extends P ? never : P]: T[P] };
 
 export interface MediaWikiError {
@@ -15,7 +19,12 @@ export interface MediaWikiError {
     module: string;
 }
 
-export interface MediaWikiRequestParams extends Record<string, Primitive | Primitive[]> {
+export interface MediaWikiContinue {
+    continue: string;
+    [key: string]: string;
+}
+
+export interface MediaWikiRequestParams extends Record<string, ParamValue | ParamValue[]> {
     action: Action;
     format?: never;
     formatversion?: never;
@@ -28,8 +37,29 @@ export interface MediaWikiResponseBody {
     docref?: string;
 }
 
-interface QueryResponseBody<T> extends MediaWikiResponseBody {
+export interface QueryRequestParams extends MediaWikiRequestParams {
+    action: 'query';
+    prop?: QueryProp;
+    list?: QueryList;
+    meta?: QueryMeta;
+    generator?: QueryGenerator;
+    titles?: string | string[];
+    pageids?: number | number[];
+    revids?: number | number[];
+    indexpageids?: boolean;
+    export?: boolean;
+    exportnowrap?: boolean;
+    exportschema?: '0.10' | '0.11';
+    iwurl?: boolean;
+    continue?: MediaWikiContinue;
+    rawcontinue?: boolean;
+    redirects?: boolean;
+    converttitles?: boolean;
+}
+
+export interface QueryResponseBody<T> extends MediaWikiResponseBody {
     batchcomplete: boolean | string;
+    continue?: MediaWikiContinue;
     query: T;
 }
 
@@ -64,18 +94,21 @@ export class HttpClient {
         return value;
     }
 
-    private createSearchParams(params: Record<string, Primitive | Primitive[]>) {
+    private createSearchParams(params: Record<string, ParamValue | ParamValue[]>) {
         const search = new URLSearchParams();
-        const convert = (value: Primitive) => {
+        const convert = (value: ParamValue) => {
             if (typeof value === 'boolean') return '';
             if (value instanceof Date) return value.toISOString();
             return String(value);
         };
         for (const key in params) {
-            let value = params[key];
+            const value = params[key];
             if (value == null || (typeof value === 'boolean' && value === false)) continue;
-            value = Array.isArray(value) ? value.map(convert) : convert(value);
-            search.set(key, this.toValues(value));
+            if (typeof value === 'object' && 'continue' in value) {
+                for (const key in value) search.set(key, this.toValues(convert(value[key])));
+                continue;
+            }
+            search.set(key, this.toValues(Array.isArray(value) ? value.map(convert) : convert(value)));
         }
         search.set('format', 'json');
         search.set('formatversion', '2');
@@ -108,8 +141,7 @@ export class HttpClient {
         return result;
     }
 
-    async query<T>(params: MediaWikiRequestParams): Promise<T> {
-        const result = await this.get<MediaWikiRequestParams, QueryResponseBody<T>>({ ...params, action: 'query' });
-        return result.query;
+    async query<T>(params: Omit<QueryRequestParams, 'action'>): Promise<T> {
+        return (await this.get<QueryRequestParams, QueryResponseBody<T>>({ ...params, action: 'query' })).query;
     }
 }
