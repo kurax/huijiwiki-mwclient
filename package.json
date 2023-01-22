@@ -22,22 +22,29 @@
     "files": [
         "dist"
     ],
+    "main": "dist/index.js",
     "module": "dist/index.js",
+    "types": "dist/index.d.ts",
     "exports": {
         "node": {
-            "import": "./dist/index.js"
+            "import": "./dist/index.js",
+            "types": "./dist/index.d.ts"
         }
     },
     "scripts": {
-        "build": "rimraf dist && tsc",
-        "publish": "yarn build && yarn npm publish --access public"
+        "build": "rimraf dist && tsc && ts-node-esm build.ts",
+        "prepublishOnly": "yarn build",
+        "publish": "yarn npm publish --access public"
     },
     "devDependencies": {
+        "@types/glob": "^8.0.1",
         "@types/node": "^18.11.18",
         "@types/tough-cookie": "^4.0.2",
         "@typescript-eslint/eslint-plugin": "^5.48.2",
         "@typescript-eslint/parser": "^5.48.2",
+        "esbuild": "^0.17.4",
         "eslint": "^8.32.0",
+        "glob": "^8.1.0",
         "prettier": "^2.8.3",
         "rimraf": "^4.1.1",
         "ts-node": "^10.9.1",
