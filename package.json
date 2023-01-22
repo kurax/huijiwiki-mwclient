@@ -33,8 +33,7 @@
     },
     "scripts": {
         "build": "rimraf dist && tsc && ts-node-esm build.ts",
-        "prepublishOnly": "yarn build",
-        "publish": "yarn npm publish --access public"
+        "publish": "yarn build && yarn npm publish --access public"
     },
     "devDependencies": {
         "@types/glob": "^8.0.1",
