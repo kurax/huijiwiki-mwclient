@@ -144,8 +144,13 @@ export class HttpClient {
         return result;
     }
 
-    async query<T>(params: Omit<QueryRequestParams, 'action'>): Promise<T> {
-        return (await this.get<QueryRequestParams, QueryResponseBody<T>>({ ...params, action: 'query' })).query;
+    async query<T>(params: Omit<QueryRequestParams, 'action'>, continueProp?: string): Promise<T> {
+        const result = await this.get<QueryRequestParams, QueryResponseBody<T>>({ ...params, action: 'query' });
+        while (continueProp != null && result.continue != null) {
+            // TODO: Implement continue
+            break;
+        }
+        return result.query;
     }
 
     async queryProp<T extends QueryProp>(prop: T, params: QueryPropParams<T>) {

@@ -1,5 +1,5 @@
 import { EditParams, EditResult } from './types/edit.js';
-import { QueryProp, QueryPropPageResult, QueryPropParams, QueryPropSubProps } from './types/query/prop.js';
+import { QueryProp, QueryPropParams, QueryPropSubProps } from './types/query/prop.js';
 import { HttpClient, Multi } from './HttpClient.js';
 
 type IDType = {
@@ -16,6 +16,16 @@ interface QueryCategoriesOptions {
 }
 
 interface QueryContributorsOptions {
+    group?: QueryPropParams<'contributors'>['pcgroup'];
+    excludeGroup?: QueryPropParams<'contributors'>['pcgroup'];
+    rights?: QueryPropParams<'contributors'>['pcrights'];
+    excludeRights?: QueryPropParams<'contributors'>['pcrights'];
+    limit?: number | 'max';
+}
+
+interface QueryImagesOptions {
+    images?: Multi<string>;
+    dir?: 'ascending' | 'descending';
     limit?: number | 'max';
 }
 
@@ -26,10 +36,32 @@ interface QueryInfoOptions {
     testActionsDetail?: 'boolean' | 'full' | 'quick';
 }
 
+interface QueryIWLinksOptions {
+    props?: Multi<QueryPropSubProps<'iwlinks'>>;
+    prefix?: string;
+    title?: string;
+    dir?: 'ascending' | 'descending';
+    limit?: number | 'max';
+}
+
 interface QueryLinksOptions {
     namespace?: number | '*';
     titles?: Multi<string>;
     dir?: 'ascending' | 'descending';
+    limit?: number | 'max';
+}
+
+interface QueryLinksHereOptions {
+    props?: Multi<QueryPropSubProps<'linkshere'>>;
+    namespace?: number | '*';
+    show?: 'redirect' | '!redirect';
+    limit?: number | 'max';
+}
+
+interface QueryRedirectsOptions {
+    props?: Multi<QueryPropSubProps<'redirects'>>;
+    namespace?: number | '*';
+    show?: 'fragment' | '!fragment';
     limit?: number | 'max';
 }
 
@@ -45,6 +77,20 @@ interface QueryRevisionsOptions {
     user?: string;
     excludeUser?: string;
     tag?: string;
+}
+
+interface QueryTemplatesOptions {
+    namespace?: number | '*';
+    templates?: Multi<string>;
+    dir?: 'ascending' | 'descending';
+    limit?: number | 'max';
+}
+
+interface QueryTranscludedInOptions {
+    props?: Multi<QueryPropSubProps<'transcludedin'>>;
+    namespace?: number | '*';
+    show?: 'redirect' | '!redirect';
+    limit?: number | 'max';
 }
 
 interface EditOptions {
@@ -93,7 +139,7 @@ export class Page<T extends keyof IDType> {
         ).edit;
     }
 
-    queryCategories(options?: QueryCategoriesOptions): Promise<QueryPropPageResult<'categories'>> {
+    queryCategories(options?: QueryCategoriesOptions) {
         return this.queryProp('categories', {
             clprop: options?.props,
             clshow: options?.show,
@@ -103,11 +149,25 @@ export class Page<T extends keyof IDType> {
         });
     }
 
-    queryContributors(options?: QueryContributorsOptions): Promise<QueryPropPageResult<'contributors'>> {
-        return this.queryProp('contributors', { pclimit: options?.limit ?? 'max' });
+    queryContributors(options?: QueryContributorsOptions) {
+        return this.queryProp('contributors', {
+            pcgroup: options?.group,
+            pcexcludegroup: options?.excludeGroup,
+            pcrights: options?.rights,
+            pcexcluderights: options?.excludeRights,
+            pclimit: options?.limit ?? 'max'
+        });
     }
 
-    queryInfo(options?: QueryInfoOptions): Promise<QueryPropPageResult<'info'>> {
+    queryImages(options?: QueryImagesOptions) {
+        return this.queryProp('images', {
+            imimages: options?.images,
+            imdir: options?.dir,
+            imlimit: options?.limit ?? 'max'
+        });
+    }
+
+    queryInfo(options?: QueryInfoOptions) {
         return this.queryProp('info', {
             inprop: options?.props,
             inlinkcontext: options?.linkContext,
@@ -116,7 +176,17 @@ export class Page<T extends keyof IDType> {
         });
     }
 
-    queryLinks(options?: QueryLinksOptions): Promise<QueryPropPageResult<'links'>> {
+    queryIWLinks(options?: QueryIWLinksOptions) {
+        return this.queryProp('iwlinks', {
+            iwprop: options?.props,
+            iwprefix: options?.prefix,
+            iwtitle: options?.title,
+            iwdir: options?.dir,
+            iwlimit: options?.limit ?? 'max'
+        });
+    }
+
+    queryLinks(options?: QueryLinksOptions) {
         return this.queryProp('links', {
             plnamespace: options?.namespace ?? '*',
             pltitles: options?.titles,
@@ -125,7 +195,25 @@ export class Page<T extends keyof IDType> {
         });
     }
 
-    queryRevisions(options?: QueryRevisionsOptions): Promise<QueryPropPageResult<'revisions'>> {
+    queryLinksHere(options?: QueryLinksHereOptions) {
+        return this.queryProp('linkshere', {
+            lhprop: options?.props,
+            lhnamespace: options?.namespace ?? '*',
+            lhshow: options?.show,
+            lhlimit: options?.limit ?? 'max'
+        });
+    }
+
+    queryRedirects(options?: QueryRedirectsOptions) {
+        return this.queryProp('redirects', {
+            rdprop: options?.props,
+            rdnamespace: options?.namespace ?? '*',
+            rdshow: options?.show,
+            rdlimit: options?.limit ?? 'max'
+        });
+    }
+
+    queryRevisions(options?: QueryRevisionsOptions) {
         return this.queryProp('revisions', {
             rvprop: options?.props,
             rvslots: options?.slots,
@@ -138,6 +226,24 @@ export class Page<T extends keyof IDType> {
             rvuser: options?.user,
             rvexcludeuser: options?.excludeUser,
             rvtag: options?.tag
+        });
+    }
+
+    queryTemplates(options?: QueryTemplatesOptions) {
+        return this.queryProp('templates', {
+            tlnamespace: options?.namespace ?? '*',
+            tltemplates: options?.templates,
+            tldir: options?.dir,
+            tllimit: options?.limit ?? 'max'
+        });
+    }
+
+    queryTranscludedIn(options?: QueryTranscludedInOptions) {
+        return this.queryProp('transcludedin', {
+            tiprop: options?.props,
+            tinamespace: options?.namespace ?? '*',
+            tishow: options?.show,
+            tilimit: options?.limit ?? 'max'
         });
     }
 

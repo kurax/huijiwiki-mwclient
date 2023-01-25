@@ -1,6 +1,7 @@
 import assert from 'node:assert';
 
 import { LoginParams, LoginResult } from './types/login.js';
+import { File } from './File.js';
 import { HttpClient } from './HttpClient.js';
 import { Page } from './Page.js';
 
@@ -43,5 +44,9 @@ export class Client {
 
     page(title: string | number) {
         return typeof title === 'number' ? new Page(this.httpClient, title, 'pageid') : new Page(this.httpClient, String(title), 'title');
+    }
+
+    file(filename: string) {
+        return new File(this.httpClient, filename);
     }
 }
