@@ -17,7 +17,7 @@ export interface ClientOptions {
 export class Client {
     private readonly httpClient: HttpClient;
 
-    constructor(readonly options: ClientOptions) {
+    constructor(options: ClientOptions) {
         const protocol = options.protocol === 'http' ? 'http' : 'https';
         const siteUrl = `${protocol}://${options.host}`;
         this.httpClient = new HttpClient(new URL(options.apiPath ?? '/w/api.php', siteUrl));

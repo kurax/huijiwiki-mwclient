@@ -49,10 +49,12 @@ interface EditOptions {
 }
 
 export class Page<T extends keyof IDType> {
+    private readonly httpClient: HttpClient;
     private readonly idParams: Partial<Record<keyof IDType, string>>;
     private csrfToken: string | undefined;
 
-    constructor(readonly httpClient: HttpClient, readonly id: IDType[T], type: T) {
+    constructor(httpClient: HttpClient, id: IDType[T], type: T) {
+        this.httpClient = httpClient;
         this.idParams = { [type]: String(id) };
     }
 
