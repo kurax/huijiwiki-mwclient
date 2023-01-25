@@ -6,11 +6,12 @@ import { CookieJar } from 'tough-cookie';
 import { Action } from './types/action.js';
 import { QueryGenerator } from './types/query/generator.js';
 import { QueryList } from './types/query/list.js';
-import { QueryMeta } from './types/query/meta.js';
-import { QueryProp } from './types/query/prop.js';
+import { QueryMeta, QueryMetaParams, QueryMetaResult } from './types/query/meta.js';
+import { QueryProp, QueryPropParams, QueryPropResult } from './types/query/prop.js';
 import { getRelativePath } from './utils.js';
 
-type ParamValue = string | number | boolean | Date | MediaWikiContinue | null | undefined;
+export type ParamValue = string | number | boolean | Date | MediaWikiContinue | null | undefined;
+export type Multi<T1, T2 = T1> = T1 | T2[];
 // type RemoveIndex<T> = { [P in keyof T as string extends P ? never : number extends P ? never : P]: T[P] };
 
 export interface MediaWikiError {
@@ -143,5 +144,13 @@ export class HttpClient {
 
     async query<T>(params: Omit<QueryRequestParams, 'action'>): Promise<T> {
         return (await this.get<QueryRequestParams, QueryResponseBody<T>>({ ...params, action: 'query' })).query;
+    }
+
+    async queryProp<T extends QueryProp>(prop: T, params: QueryPropParams<T>): Promise<QueryPropResult<T>> {
+        return await this.query<any>({ ...params, prop });
+    }
+
+    async queryMeta<T extends QueryMeta>(meta: T, params: QueryMetaParams[T]): Promise<QueryMetaResult[T]> {
+        return (await this.query<any>({ ...params, meta }))[meta];
     }
 }

@@ -4,7 +4,7 @@ export interface EditParams extends MediaWikiRequestParams {
     action: 'edit';
     token: string;
     title?: string;
-    pageid?: number;
+    pageid?: number | string;
     section?: number | 'new';
     sectiontitle?: string;
     text?: string;

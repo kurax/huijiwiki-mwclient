@@ -57,7 +57,7 @@ await client.login('User', 'Password');
 ### Creating/Editing a page <font size="2">[[Details]](https://www.mediawiki.org/wiki/API:Edit)</font>
 
 ```ts
-await client.editPage('Page', 'Content', { summary: 'Some changes' });
+await client.page('Page').edit('Content', { summary: 'Some changes' });
 ```
 
 More APIs are on the way...
