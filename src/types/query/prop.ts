@@ -36,9 +36,9 @@ export type QueryProp =
 
 // --- Sub-props ----------------------
 
-type SPCategories = 'sortkey' | 'timestamp' | 'hidden';
+type SubPropsCategories = 'sortkey' | 'timestamp' | 'hidden';
 
-type SPInfo =
+type SubPropsInfo =
     | 'associatedpage'
     | 'displaytitle'
     | 'protection'
@@ -53,7 +53,7 @@ type SPInfo =
     | 'varianttitles'
     | 'linkclasses';
 
-type SPRevisions =
+type SubPropsRevisions =
     | 'ids'
     | 'flags'
     | 'timestamp'
@@ -70,34 +70,53 @@ type SPRevisions =
     | 'tags'
     | 'roles';
 
-export type QueryPropSubProps<T extends QueryProp> = T extends 'info' ? SPInfo : T extends 'revisions' ? SPRevisions : Multi<string>;
+export type QueryPropSubProps<T extends QueryProp> = T extends 'categories'
+    ? SubPropsCategories
+    : T extends 'info'
+    ? SubPropsInfo
+    : T extends 'revisions'
+    ? SubPropsRevisions
+    : never;
 
 // --- Params -------------------------
 
-type PCommon = {
+type ParamsCommon = {
     titles?: Multi<string>;
     pageids?: Multi<string | number>;
 };
 
-type PCategories = PCommon & {
-    clprop?: Multi<SPCategories>;
+type ParamsCategories = ParamsCommon & {
+    clprop?: Multi<SubPropsCategories>;
     clshow?: 'hidden' | '!hidden';
     clcategories?: Multi<string>;
     cldir?: 'ascending' | 'descending';
-    cllimit?: number;
+    cllimit?: number | 'max';
     clcontinue?: MediaWikiContinue;
 };
 
-type PInfo = PCommon & {
-    inprop?: Multi<SPInfo>;
+type ParamsContributors = ParamsCommon & {
+    pclimit?: number | 'max';
+    pccontinue?: MediaWikiContinue;
+};
+
+type ParamsInfo = ParamsCommon & {
+    inprop?: Multi<SubPropsInfo>;
     inlinkcontext?: string;
     intestactions?: Multi<string>;
     intestactionsdetail?: 'boolean' | 'full' | 'quick';
     incontinue?: MediaWikiContinue;
 };
 
-type PRevisions = PCommon & {
-    rvprop?: Multi<SPRevisions>;
+type ParamsLinks = ParamsCommon & {
+    plnamespace?: number | '*';
+    pltitles?: Multi<string>;
+    pldir?: 'ascending' | 'descending';
+    pllimit?: number | 'max';
+    plcontinue?: MediaWikiContinue;
+};
+
+type ParamsRevisions = ParamsCommon & {
+    rvprop?: Multi<SubPropsRevisions>;
     rvslots?: 'main';
     rvstartid?: number;
     rvendid?: number;
@@ -107,25 +126,40 @@ type PRevisions = PCommon & {
     rvuser?: string;
     rvexcludeuser?: string;
     rvtag?: string;
-    rvlimit?: number;
+    rvlimit?: number | 'max';
     rvcontinue?: MediaWikiContinue;
 };
 
-export type QueryPropParams<T extends QueryProp> = T extends 'categories' ? PCategories : T extends 'info' ? PInfo : T extends 'revisions' ? PRevisions : any;
+export type QueryPropParams<T extends QueryProp> = T extends 'categories'
+    ? ParamsCategories
+    : T extends 'contributors'
+    ? ParamsContributors
+    : T extends 'info'
+    ? ParamsInfo
+    : T extends 'links'
+    ? ParamsLinks
+    : T extends 'revisions'
+    ? ParamsRevisions
+    : any;
 
 // --- Result -------------------------
 
-type RCommon = {
+type QueryCommon = {
     pageid?: number;
     ns?: number;
     title?: string;
 };
 
-type RCategories = RCommon & {
+type QueryCategories = QueryCommon & {
     categories: Array<{ ns: number; title: string }>;
 };
 
-type RInfo = RCommon & {
+type QueryContributors = QueryCommon & {
+    anoncontributors: number;
+    contributors: Array<{ userid: number; name: string }>;
+};
+
+type QueryInfo = QueryCommon & {
     contentmodel?: string;
     pagelanguage?: string;
     pagelanguagehtmlcode?: string;
@@ -151,7 +185,11 @@ type RInfo = RCommon & {
     watchers?: number;
 };
 
-type RRevisions = RCommon & {
+type QueryLinks = QueryCommon & {
+    links: Array<{ ns: number; title: string }>;
+};
+
+type QueryRevisions = QueryCommon & {
     revisions: Array<{
         revid?: number;
         parentid?: number;
@@ -171,7 +209,20 @@ type RRevisions = RCommon & {
 };
 
 export type QueryPropResult<T extends QueryProp> = {
-    pages: Array<T extends 'categories' ? RCategories : T extends 'info' ? RInfo : T extends 'revisions' ? RRevisions : any>;
+    normalized?: Array<{ fromencoded?: boolean; from: string; to: string }>;
+    pages: Array<
+        T extends 'categories'
+            ? QueryCategories
+            : T extends 'contributors'
+            ? QueryContributors
+            : T extends 'info'
+            ? QueryInfo
+            : T extends 'links'
+            ? QueryLinks
+            : T extends 'revisions'
+            ? QueryRevisions
+            : any
+    >;
 };
 
 export type QueryPropPageResult<T extends QueryProp> = QueryPropResult<T>['pages'][number];

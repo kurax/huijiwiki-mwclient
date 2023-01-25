@@ -146,8 +146,8 @@ export class HttpClient {
         return (await this.get<QueryRequestParams, QueryResponseBody<T>>({ ...params, action: 'query' })).query;
     }
 
-    async queryProp<T extends QueryProp>(prop: T, params: QueryPropParams<T>): Promise<QueryPropResult<T>> {
-        return await this.query<any>({ ...params, prop });
+    async queryProp<T extends QueryProp>(prop: T, params: QueryPropParams<T>) {
+        return await this.query<QueryPropResult<T>>({ ...params, prop });
     }
 
     async queryMeta<T extends QueryMeta>(meta: T, params: QueryMetaParams[T]): Promise<QueryMetaResult[T]> {

@@ -1,7 +1,7 @@
 import assert from 'node:assert';
 
 import { EditParams, EditResult } from './types/edit.js';
-import { QueryProp, QueryPropPageResult, QueryPropSubProps } from './types/query/prop.js';
+import { QueryProp, QueryPropPageResult, QueryPropParams, QueryPropSubProps } from './types/query/prop.js';
 import { HttpClient, Multi } from './HttpClient.js';
 
 type IDType = {
@@ -12,9 +12,13 @@ type IDType = {
 interface QueryCategoriesOptions {
     props?: Multi<QueryPropSubProps<'categories'>>;
     show?: 'hidden' | '!hidden';
-    limit?: number;
+    limit?: number | 'max';
     categories?: Multi<string>;
     dir?: 'ascending' | 'descending';
+}
+
+interface QueryContributorsOptions {
+    limit?: number | 'max';
 }
 
 interface QueryInfoOptions {
@@ -24,10 +28,17 @@ interface QueryInfoOptions {
     testActionsDetail?: 'boolean' | 'full' | 'quick';
 }
 
+interface QueryLinksOptions {
+    namespace?: number | '*';
+    titles?: Multi<string>;
+    dir?: 'ascending' | 'descending';
+    limit?: number | 'max';
+}
+
 interface QueryRevisionsOptions {
     props?: Multi<QueryPropSubProps<'revisions'>>;
     slots?: 'main';
-    limit?: number;
+    limit?: number | 'max';
     startId?: number;
     endId?: number;
     start?: Date;
@@ -64,13 +75,13 @@ export class Page<T extends keyof IDType> {
         return this.csrfToken;
     }
 
-    private async queryProp(prop: QueryProp, params: Record<string, any>) {
+    private async queryProp<T extends QueryProp>(prop: T, params: QueryPropParams<T>) {
         const { pages } = await this.httpClient.queryProp(prop, {
             titles: this.idParams.title,
             pageids: this.idParams.pageid,
             ...params
         });
-        return pages.find((page: any) => page.pageid === this.idParams.pageid || page.title === this.idParams.title) ?? pages[0];
+        return pages?.find((page: any) => page.pageid === this.idParams.pageid || page.title === this.idParams.title) ?? pages?.[0];
     }
 
     private async editPage(params: Record<string, any>, options?: EditOptions) {
@@ -95,10 +106,14 @@ export class Page<T extends keyof IDType> {
         return this.queryProp('categories', {
             clprop: options?.props,
             clshow: options?.show,
-            cllimit: options?.limit,
+            cllimit: options?.limit ?? 'max',
             clcategories: options?.categories,
             cldir: options?.dir
         });
+    }
+
+    queryContributors(options?: QueryContributorsOptions): Promise<QueryPropPageResult<'contributors'>> {
+        return this.queryProp('contributors', { pclimit: options?.limit ?? 'max' });
     }
 
     queryInfo(options?: QueryInfoOptions): Promise<QueryPropPageResult<'info'>> {
@@ -110,11 +125,20 @@ export class Page<T extends keyof IDType> {
         });
     }
 
+    queryLinks(options?: QueryLinksOptions): Promise<QueryPropPageResult<'links'>> {
+        return this.queryProp('links', {
+            plnamespace: options?.namespace ?? '*',
+            pltitles: options?.titles,
+            pldir: options?.dir,
+            pllimit: options?.limit ?? 'max'
+        });
+    }
+
     queryRevisions(options?: QueryRevisionsOptions): Promise<QueryPropPageResult<'revisions'>> {
         return this.queryProp('revisions', {
             rvprop: options?.props,
             rvslots: options?.slots,
-            rvlimit: options?.limit,
+            rvlimit: options?.limit ?? 'max',
             rvstartid: options?.startId,
             rvendid: options?.endId,
             rvstart: options?.start,
