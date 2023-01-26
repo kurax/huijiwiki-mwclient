@@ -51,6 +51,7 @@
     },
     "dependencies": {
         "chalk": "^5.2.0",
+        "formdata-node": "^5.0.0",
         "got": "^12.5.3",
         "tough-cookie": "^4.1.2"
     }

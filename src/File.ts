@@ -1,8 +1,24 @@
-import { QueryProp, QueryPropParams, QueryPropSubProps } from './types/query/prop.js';
-import { HttpClient, Multi } from './HttpClient.js';
+import { FormData } from 'formdata-node';
+import { fileFromPath } from 'formdata-node/file-from-path';
+
+import { ImageInfo, QueryProp, QueryPropParams, QueryPropSubProps } from './types/query/prop.js';
+import { HttpClient, MediaWikiResponseBody, Multi } from './HttpClient.js';
 
 interface QueryImageInfoOptions {
     props?: Multi<QueryPropSubProps<'imageinfo'>>;
+}
+
+interface UploadOptions {
+    comment?: string;
+    text?: string;
+}
+
+interface UploadResult extends MediaWikiResponseBody {
+    upload: {
+        result: 'Success';
+        filename: string;
+        imageinfo: ImageInfo;
+    };
 }
 
 interface QueryFileUsageOptions {
@@ -14,10 +30,12 @@ interface QueryFileUsageOptions {
 
 export class File {
     private readonly httpClient: HttpClient;
+    private readonly filename: string;
     private readonly title: string;
 
     constructor(httpClient: HttpClient, filename: string) {
         this.httpClient = httpClient;
+        this.filename = filename;
         this.title = `File:${filename}`;
     }
 
@@ -42,5 +60,20 @@ export class File {
             fushow: options?.show,
             fulimit: options?.limit ?? 'max'
         });
+    }
+
+    async upload(path: string, options?: UploadOptions) {
+        const file = await fileFromPath(path);
+        const form = new FormData();
+        form.set('action', 'upload');
+        form.set('filename', this.filename);
+        form.set('file', file);
+        form.set('filesize', file.size);
+        form.set('async', '1');
+        form.set('ignorewarnings', '1');
+        if (options?.comment) form.set('comment', options.comment);
+        if (options?.text) form.set('text', options.text);
+        form.set('token', await this.httpClient.getToken());
+        return (await this.httpClient.postFormData<UploadResult>(form)).upload;
     }
 }

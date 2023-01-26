@@ -509,32 +509,34 @@ type QueryImages = QueryPage & {
     images: Omit<QueryPage, 'pageid'>[];
 };
 
+export interface ImageInfo {
+    timestamp?: string;
+    user?: string;
+    userid?: number;
+    size?: number;
+    width?: number;
+    height?: number;
+    sha1?: string;
+    canonicaltitle?: string;
+    url?: string;
+    descriptionurl?: string;
+    descriptionshorturl?: string;
+    bitdepth?: number;
+    comment?: string;
+    parsedcomment?: string;
+    html?: string;
+    mime?: string;
+    thumbmime?: string;
+    mediatype?: string;
+    metadata?: Array<{ name: string; value: any }>;
+    commonmetadata?: Array<{ name: string; value: any }>;
+    extmetadata?: Record<string, { value: string; source: string; hidden: string }>;
+}
+
 type QueryImageInfo = QueryPage & {
     missing?: boolean;
     imagerepository: string;
-    imageinfo: Array<{
-        timestamp?: string;
-        user?: string;
-        userid?: number;
-        size?: number;
-        width?: number;
-        height?: number;
-        sha1?: string;
-        canonicaltitle?: string;
-        url?: string;
-        descriptionurl?: string;
-        descriptionshorturl?: string;
-        bitdepth?: number;
-        comment?: string;
-        parsedcomment?: string;
-        html?: string;
-        mime?: string;
-        thumbmime?: string;
-        mediatype?: string;
-        metadata?: Array<{ name: string; value: any }>;
-        commonmetadata?: Array<{ name: string; value: any }>;
-        extmetadata?: Record<string, { value: string; source: string; hidden: string }>;
-    }>;
+    imageinfo: ImageInfo[];
 };
 
 type QueryInfo = QueryPage & {

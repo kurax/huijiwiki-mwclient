@@ -1,4 +1,5 @@
 import chalk from 'chalk';
+import { FormData } from 'formdata-node';
 import got, { Got } from 'got';
 import fs from 'node:fs';
 import { CookieJar } from 'tough-cookie';
@@ -139,6 +140,16 @@ export class HttpClient {
 
     async post<T extends MediaWikiRequestParams = MediaWikiRequestParams, R extends MediaWikiResponseBody = MediaWikiResponseBody>(params: T): Promise<R> {
         const result = await this.client.post(this.endpoint, { form: Object.fromEntries(this.createSearchParams(params).entries()) }).json<R>();
+        this.checkWarnings(result.warnings);
+        this.checkErrors(result.errors);
+        return result;
+    }
+
+    async postFormData<R extends MediaWikiResponseBody = MediaWikiResponseBody>(body: FormData): Promise<R> {
+        body.set('format', 'json');
+        body.set('formatversion', '2');
+        body.set('errorformat', 'plaintext');
+        const result = await this.client.post(this.endpoint, { body }).json<R>();
         this.checkWarnings(result.warnings);
         this.checkErrors(result.errors);
         return result;
