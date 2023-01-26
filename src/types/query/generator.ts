@@ -39,86 +39,10 @@ export type QueryGenerator =
     | 'watchlistraw'
     | 'wblistentityusage';
 
-export type QueryGeneratorParams = {
-    allcategories: any;
-    alldeletedrevisions: any;
-    allfileusages: any;
-    allimages: any;
-    alllinks: any;
-    allpages: any;
-    allredirects: any;
-    allrevisions: any;
-    alltransclusions: any;
-    backlinks: any;
-    categories: any;
-    categorymembers: any;
-    deletedrevisions: any;
-    duplicatefiles: any;
-    embeddedin: any;
-    exturlusage: any;
-    fileusage: any;
-    images: any;
-    imageusage: any;
-    iwbacklinks: any;
-    langbacklinks: any;
-    links: any;
-    linkshere: any;
-    messagecollection: any;
-    mostviewed: any;
-    pageswithprop: any;
-    prefixsearch: any;
-    protectedtitles: any;
-    querypage: any;
-    random: any;
-    recentchanges: any;
-    redirects: any;
-    revisions: any;
-    search: any;
-    templates: any;
-    transcludedin: any;
-    watchlist: any;
-    watchlistraw: any;
-    wblistentityusage: any;
-};
+// --- Params -------------------------
 
-export type QueryGeneratorResult = {
-    allcategories: any;
-    alldeletedrevisions: any;
-    allfileusages: any;
-    allimages: any;
-    alllinks: any;
-    allpages: any;
-    allredirects: any;
-    allrevisions: any;
-    alltransclusions: any;
-    backlinks: any;
-    categories: any;
-    categorymembers: any;
-    deletedrevisions: any;
-    duplicatefiles: any;
-    embeddedin: any;
-    exturlusage: any;
-    fileusage: any;
-    images: any;
-    imageusage: any;
-    iwbacklinks: any;
-    langbacklinks: any;
-    links: any;
-    linkshere: any;
-    messagecollection: any;
-    mostviewed: any;
-    pageswithprop: any;
-    prefixsearch: any;
-    protectedtitles: any;
-    querypage: any;
-    random: any;
-    recentchanges: any;
-    redirects: any;
-    revisions: any;
-    search: any;
-    templates: any;
-    transcludedin: any;
-    watchlist: any;
-    watchlistraw: any;
-    wblistentityusage: any;
-};
+export type QueryGeneratorParams<T extends QueryGenerator> = any;
+
+// --- Result -------------------------
+
+export type QueryGeneratorResult<T extends QueryGenerator> = any;

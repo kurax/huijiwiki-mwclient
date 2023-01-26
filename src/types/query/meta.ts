@@ -1,4 +1,4 @@
-import { TokenType } from './meta/tokens.js';
+import { Multi } from '../../HttpClient.js';
 
 export type QueryMeta =
     | 'allmessages'
@@ -24,50 +24,17 @@ export type QueryMeta =
     | 'userinfo'
     | 'wikibase';
 
-export type QueryMetaParams = {
-    allmessages: any;
-    authmanagerinfo: any;
-    babel: any;
-    featureusage: any;
-    filerepoinfo: any;
-    globalpreferences: any;
-    globalrenamestatus: any;
-    globaluserinfo: any;
-    languageinfo: any;
-    languagestats: any;
-    linterstats: any;
-    managemessagegroups: any;
-    messagegroups: any;
-    messagegroupstats: any;
-    messagetranslations: any;
-    notifications: any;
-    siteinfo: any;
-    siteviews: any;
-    tokens: { type: TokenType | TokenType[] };
-    unreadnotificationpages: any;
-    userinfo: any;
-    wikibase: any;
+// --- Params -------------------------
+
+type ParamsTokens = {
+    type: Multi<'*' | 'createaccount' | 'csrf' | 'deleteglobalaccount' | 'login' | 'patrol' | 'rollback' | 'setglobalaccountstatus' | 'userrights' | 'watch'>;
 };
 
-export type QueryMetaResult = {
-    allmessages: any;
-    authmanagerinfo: any;
-    babel: any;
-    featureusage: any;
-    filerepoinfo: any;
-    globalpreferences: any;
-    globalrenamestatus: any;
-    globaluserinfo: any;
-    languageinfo: any;
-    languagestats: any;
-    linterstats: any;
-    managemessagegroups: any;
-    messagegroups: any;
-    messagegroupstats: any;
-    messagetranslations: any;
-    notifications: any;
-    siteinfo: any;
-    siteviews: any;
+export type QueryMetaParams<T extends QueryMeta> = T extends 'tokens' ? ParamsTokens : any;
+
+// --- Result -------------------------
+
+type QueryTokens = {
     tokens: {
         createaccounttoken?: string;
         csrftoken?: string;
@@ -77,7 +44,6 @@ export type QueryMetaResult = {
         userrightstoken?: string;
         watchtoken?: string;
     };
-    unreadnotificationpages: any;
-    userinfo: any;
-    wikibase: any;
 };
+
+export type QueryMetaResult<T extends QueryMeta> = T extends 'tokens' ? QueryTokens : any;

@@ -1,5 +1,3 @@
-import assert from 'node:assert';
-
 import { EditParams, EditResult } from './types/edit.js';
 import { QueryProp, QueryPropPageResult, QueryPropParams, QueryPropSubProps } from './types/query/prop.js';
 import { HttpClient, Multi } from './HttpClient.js';
@@ -62,17 +60,10 @@ interface EditOptions {
 export class Page<T extends keyof IDType> {
     private readonly httpClient: HttpClient;
     private readonly idParams: Partial<Record<keyof IDType, string>>;
-    private csrfToken: string | undefined;
 
     constructor(httpClient: HttpClient, id: IDType[T], type: T) {
         this.httpClient = httpClient;
         this.idParams = { [type]: String(id) };
-    }
-
-    private async getToken() {
-        this.csrfToken = this.csrfToken ?? (await this.httpClient.queryMeta('tokens', { type: 'csrf' })).csrftoken;
-        assert(this.csrfToken != null, 'Failed to get csrf token');
-        return this.csrfToken;
     }
 
     private async queryProp<T extends QueryProp>(prop: T, params: QueryPropParams<T>) {
@@ -97,7 +88,7 @@ export class Page<T extends keyof IDType> {
                 recreate: options?.recreate,
                 createonly: options?.createOnly,
                 nocreate: options?.noCreate,
-                token: await this.getToken()
+                token: await this.httpClient.getToken()
             })
         ).edit;
     }

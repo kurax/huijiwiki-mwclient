@@ -66,6 +66,8 @@ export interface QueryResponseBody<T> extends MediaWikiResponseBody {
 
 export class HttpClient {
     private readonly client: Got;
+    private token: string | undefined;
+    private tokenTime: number | undefined;
 
     constructor(readonly endpoint: URL) {
         this.client = got.extend({
@@ -150,7 +152,15 @@ export class HttpClient {
         return await this.query<QueryPropResult<T>>({ ...params, prop });
     }
 
-    async queryMeta<T extends QueryMeta>(meta: T, params: QueryMetaParams[T]): Promise<QueryMetaResult[T]> {
-        return (await this.query<any>({ ...params, meta }))[meta];
+    async queryMeta<T extends QueryMeta>(meta: T, params: QueryMetaParams<T>) {
+        return (await this.query<QueryMetaResult<T>>({ ...params, meta }))[meta];
+    }
+
+    async getToken() {
+        if (this.token == null || Date.now() - (this.tokenTime ?? 0) >= 1000 * 60 * 5) {
+            this.token = (await this.queryMeta('tokens', { type: 'csrf' })).csrftoken;
+            this.tokenTime = Date.now();
+        }
+        return this.token as string;
     }
 }
