@@ -1,6 +1,7 @@
 import assert from 'node:assert';
 
 import { LoginParams, LoginResult } from './types/login.js';
+import { Category } from './Category.js';
 import { File } from './File.js';
 import { HttpClient } from './HttpClient.js';
 import { Page } from './Page.js';
@@ -42,8 +43,16 @@ export class Client {
         await this.httpClient.post({ action: 'logout', token });
     }
 
+    async listCategories() {
+        return (await this.httpClient.queryList('allcategories', { aclimit: 'max', acprop: ['size', 'hidden'] })).allcategories;
+    }
+
     page(title: string | number) {
         return typeof title === 'number' ? new Page(this.httpClient, title, 'pageid') : new Page(this.httpClient, String(title), 'title');
+    }
+
+    category(title: string) {
+        return new Category(this.httpClient, title);
     }
 
     file(filename: string) {

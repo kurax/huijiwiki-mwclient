@@ -41,8 +41,10 @@ export type QueryGenerator =
 
 // --- Params -------------------------
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export type QueryGeneratorParams<T extends QueryGenerator> = any;
 
 // --- Result -------------------------
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export type QueryGeneratorResult<T extends QueryGenerator> = any;

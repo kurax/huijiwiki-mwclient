@@ -5,8 +5,9 @@ import fs from 'node:fs';
 import { CookieJar } from 'tough-cookie';
 
 import { Action } from './types/action.js';
+import { ParseProp } from './types/parse/prop.js';
 import { QueryGenerator } from './types/query/generator.js';
-import { QueryList } from './types/query/list.js';
+import { QueryList, QueryListParams, QueryListResult } from './types/query/list.js';
 import { QueryMeta, QueryMetaParams, QueryMetaResult } from './types/query/meta.js';
 import { QueryProp, QueryPropParams, QueryPropResult } from './types/query/prop.js';
 import { getRelativePath } from './utils.js';
@@ -63,6 +64,37 @@ export interface QueryResponseBody<T> extends MediaWikiResponseBody {
     batchcomplete: boolean | string;
     continue?: MediaWikiContinue;
     query: T;
+}
+
+export interface ParseRequestParams extends MediaWikiRequestParams {
+    action: 'parse';
+    page?: string;
+    pageid?: number;
+    oldid?: number;
+    revid?: number;
+    redirects?: boolean;
+    prop?: Multi<ParseProp>;
+    wrapoutputclass?: string;
+    parsoid?: boolean;
+    pst?: boolean;
+    onlypst?: boolean;
+    section?: number | 'new';
+    sectiontitle?: string;
+    disablelimitreport?: boolean;
+    disableeditsection?: boolean;
+    disablestylededuplication?: boolean;
+    disabletoc?: boolean;
+    mobileformat?: boolean;
+    showstrategykeys?: boolean;
+    preview?: boolean;
+    sectionpreview?: boolean;
+}
+
+export interface ParseResponseBody extends MediaWikiResponseBody {
+    parse: {
+        title: string;
+        pageid: number;
+    } & Partial<Record<ParseProp, any>>;
 }
 
 export class HttpClient {
@@ -155,6 +187,11 @@ export class HttpClient {
         return result;
     }
 
+    async parse(params: Omit<ParseRequestParams, 'action'>): Promise<ParseResponseBody['parse']> {
+        const result = await this.get<ParseRequestParams, ParseResponseBody>({ ...params, action: 'parse' });
+        return result.parse;
+    }
+
     async query<T>(params: Omit<QueryRequestParams, 'action'>, continueProp?: string): Promise<T> {
         const result = await this.get<QueryRequestParams, QueryResponseBody<T>>({ ...params, action: 'query' });
         while (continueProp != null && result.continue != null) {
@@ -166,6 +203,10 @@ export class HttpClient {
 
     async queryProp<T extends QueryProp>(prop: T, params: QueryPropParams<T>) {
         return await this.query<QueryPropResult<T>>({ ...params, prop });
+    }
+
+    async queryList<T extends QueryList>(list: T, params: QueryListParams<T>) {
+        return await this.query<QueryListResult<T>>({ ...params, list });
     }
 
     async queryMeta<T extends QueryMeta>(meta: T, params: QueryMetaParams<T>) {

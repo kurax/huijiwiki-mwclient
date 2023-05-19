@@ -1,3 +1,5 @@
+import { Multi } from '../../HttpClient.js';
+
 export type QueryList =
     | 'abusefilters'
     | 'abuselog'
@@ -55,8 +57,20 @@ export type QueryList =
 
 // --- Params -------------------------
 
-export type QueryListParams<T extends QueryList> = any;
+type ParamsAllCategories = {
+    acfrom?: string;
+    acto?: string;
+    acprefix?: string;
+    acdir?: 'ascending' | 'descending';
+    acmin?: number;
+    acmax?: number;
+    aclimit?: number | 'max';
+    acprop?: Multi<'size' | 'hidden'>;
+};
+
+export type QueryListParams<T extends QueryList> = T extends 'allcategories' ? ParamsAllCategories : any;
 
 // --- Result -------------------------
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export type QueryListResult<T extends QueryList> = any;

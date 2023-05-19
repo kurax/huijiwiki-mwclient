@@ -139,6 +139,22 @@ export class Page<T extends keyof IDType> {
         ).edit;
     }
 
+    #text: string | null | undefined;
+    async text() {
+        if (typeof this.#text !== 'undefined') return this.#text;
+        const result = await this.httpClient.parse({ page: this.idParams.title, prop: 'text' });
+        this.#text = result?.text ?? null;
+        return this.#text;
+    }
+
+    #wikitext: string | null | undefined;
+    async wikitext() {
+        if (typeof this.#wikitext !== 'undefined') return this.#wikitext;
+        const result = await this.httpClient.parse({ page: this.idParams.title, prop: 'wikitext' });
+        this.#wikitext = result?.wikitext ?? null;
+        return this.#wikitext;
+    }
+
     queryCategories(options?: QueryCategoriesOptions) {
         return this.queryProp('categories', {
             clprop: options?.props,
