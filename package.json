@@ -36,23 +36,24 @@
         "publish": "yarn build && yarn npm publish --access public"
     },
     "devDependencies": {
-        "@types/glob": "^8.0.1",
-        "@types/node": "^18.11.18",
-        "@types/tough-cookie": "^4.0.2",
-        "@typescript-eslint/eslint-plugin": "^5.49.0",
-        "@typescript-eslint/parser": "^5.49.0",
-        "esbuild": "^0.17.4",
-        "eslint": "^8.32.0",
-        "glob": "^8.1.0",
-        "prettier": "^2.8.3",
-        "rimraf": "^4.1.2",
-        "ts-node": "^10.9.1",
-        "typescript": "^4.9.4"
+        "@types/glob": "8.1.0",
+        "@types/node": "18.16.13",
+        "@types/tough-cookie": "4.0.2",
+        "@typescript-eslint/eslint-plugin": "5.59.6",
+        "@typescript-eslint/parser": "5.59.6",
+        "esbuild": "0.17.19",
+        "eslint": "8.40.0",
+        "glob": "8.1.0",
+        "prettier": "2.8.8",
+        "rimraf": "5.0.1",
+        "ts-node": "10.9.1",
+        "typescript": "5.0.4"
     },
     "dependencies": {
-        "chalk": "^5.2.0",
-        "formdata-node": "^5.0.0",
-        "got": "^12.5.3",
-        "tough-cookie": "^4.1.2"
+        "formdata-node": "5.0.0",
+        "got": "12.6.0",
+        "pino": "8.14.1",
+        "pino-pretty": "10.0.0",
+        "tough-cookie": "4.1.2"
     }
 }
