@@ -1,10 +1,11 @@
-import chalk from 'chalk';
 import { FormData } from 'formdata-node';
 import got, { Got } from 'got';
 import fs from 'node:fs';
+import { pino } from 'pino';
 import { CookieJar } from 'tough-cookie';
 
 import { Action } from './types/action.js';
+import { APIResponse, ErrorData } from './types/common.js';
 import { ParseProp } from './types/parse/prop.js';
 import { QueryGenerator } from './types/query/generator.js';
 import { QueryList, QueryListParams, QueryListResult } from './types/query/list.js';
@@ -35,8 +36,8 @@ export interface MediaWikiRequestParams extends Record<string, ParamValue | Para
 }
 
 export interface MediaWikiResponseBody {
-    warnings?: MediaWikiError[];
-    errors?: MediaWikiError[];
+    warnings?: ErrorData[];
+    errors?: ErrorData[];
     docref?: string;
 }
 
@@ -97,12 +98,19 @@ export interface ParseResponseBody extends MediaWikiResponseBody {
     } & Partial<Record<ParseProp, any>>;
 }
 
+interface HttpClientOptions {
+    logger?: pino.Logger;
+    params?: Record<string, any>;
+}
+
 export class HttpClient {
     private readonly client: Got;
+    private readonly logger: pino.Logger | undefined;
     private token: string | undefined;
     private tokenTime: number | undefined;
 
-    constructor(readonly endpoint: URL) {
+    constructor(readonly endpoint: URL, readonly options?: HttpClientOptions) {
+        this.logger = options?.logger;
         this.client = got.extend({
             cookieJar: new CookieJar(),
             headers: { 'User-Agent': this.getUserAgent() }
@@ -114,53 +122,72 @@ export class HttpClient {
         const path = getRelativePath('../package.json', import.meta.url);
         if (fs.existsSync(path)) {
             const packageJson = JSON.parse(fs.readFileSync(path).toString());
-            userAgent = `HuijiMWClient/${packageJson.version} Got/${packageJson.dependencies.got.replace('^', '')}`;
+            userAgent = `HuijiClient/${packageJson.version} Got/${packageJson.dependencies.got.replace('^', '')}`;
         }
         return userAgent;
     }
 
-    private toValues<T>(values: T | T[]) {
-        if (Array.isArray(values)) {
-            const strings = values.map(String);
-            if (strings.some(value => value.includes('|'))) return '\x1f'.concat(strings.join('\x1f'));
-            return strings.join('|');
-        }
-        const value = String(values);
-        if (value.includes('|')) return '\x1f'.concat(value);
-        return value;
-    }
-
-    private createSearchParams(params: Record<string, ParamValue | ParamValue[]>) {
+    private createSearchParams(params: Record<string, any>) {
         const search = new URLSearchParams();
-        const convert = (value: ParamValue) => {
-            if (typeof value === 'boolean') return '';
-            if (value instanceof Date) return value.toISOString();
-            return String(value);
+        const setValue = (key: string, value: any) => {
+            const x1f = '\x1f';
+            const escapeString = (str: string) => (str.includes('|') ? x1f.concat(str) : str);
+            if (value == null) return;
+            if (value instanceof Date) search.set(key, value.toISOString());
+            else if (Array.isArray(value)) {
+                const values = value.map(String);
+                if (values.length > 0) search.set(key, values.some(v => v.includes('|')) ? x1f.concat(values.join(x1f)) : values.join('|'));
+            } else
+                switch (typeof value) {
+                    case 'boolean':
+                        if (value === true) search.set(key, '');
+                        return;
+                    case 'string':
+                        search.set(key, key === 'continue' ? value : escapeString(value));
+                        return;
+                    case 'bigint':
+                    case 'number':
+                        search.set(key, String(value));
+                        return;
+                }
         };
-        for (const key in params) {
-            const value = params[key];
-            if (value == null || (typeof value === 'boolean' && value === false)) continue;
-            if (typeof value === 'object' && 'continue' in value) {
-                for (const key in value) search.set(key, this.toValues(convert(value[key])));
-                continue;
-            }
-            search.set(key, this.toValues(Array.isArray(value) ? value.map(convert) : convert(value)));
-        }
+        if (this.options?.params != null) for (const key in this.options.params) setValue(key, this.options.params[key]);
+        for (const key in params) setValue(key, params[key]);
         search.set('format', 'json');
         search.set('formatversion', '2');
         search.set('errorformat', 'plaintext');
+        if (!search.has('utf8') && !search.has('ascii')) search.set('utf8', '');
+        if (!search.has('uselang')) search.set('uselang', 'en');
         return search;
     }
 
-    private checkWarnings(warnings?: MediaWikiError[]) {
+    private checkWarnings(warnings?: ErrorData[]) {
         if (warnings == null) return;
-        for (const warning of warnings) console.warn(chalk.yellow(`[${warning.module}] ${warning.code}: ${warning.text}`));
+        for (const warning of warnings) this.logger?.warn(`[${warning.module}] ${warning.code}: ${warning.text}`);
     }
 
-    private checkErrors(errors?: MediaWikiError[]) {
+    private checkErrors(errors?: ErrorData[]) {
         if (errors == null) return;
         const message = (Array.isArray(errors) ? errors : [errors]).map(err => `[${err.module}] ${err.code}: ${err.text}`).join('\n');
+        this.logger?.error(message);
         throw new Error(message);
+    }
+
+    async request<P extends Record<string, any>, R extends APIResponse>(method: 'GET' | 'POST', params?: P): Promise<R> {
+        const data = this.createSearchParams(params ?? {});
+        if (method === 'GET') this.logger?.info(`${method} ${this.endpoint.toString()}?${data.toString()}`);
+        else if (method === 'POST') {
+            const body = new URLSearchParams(data);
+            for (const key of body.keys()) if (key.toLowerCase().includes('password')) body.set(key, '****');
+            this.logger?.info({ body: body.toString() }, `${method} ${this.endpoint.toString()}`);
+        }
+        const result =
+            method === 'GET'
+                ? await this.client.get(this.endpoint, { searchParams: data }).json<R>()
+                : await this.client.post(this.endpoint, { form: Object.fromEntries(data.entries()) }).json<R>();
+        this.checkWarnings(result.warnings);
+        this.checkErrors(result.errors);
+        return result;
     }
 
     async get<T extends MediaWikiRequestParams = MediaWikiRequestParams, R extends MediaWikiResponseBody = MediaWikiResponseBody>(params: T): Promise<R> {

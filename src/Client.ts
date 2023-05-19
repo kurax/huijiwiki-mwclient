@@ -16,6 +16,7 @@ export interface ClientOptions {
     // };
 }
 
+/** @deprecated */
 export class Client {
     private readonly httpClient: HttpClient;
 
